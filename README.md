@@ -42,6 +42,7 @@ Open Telegram, find your bot, say "hello". 🎉
 | **Telegram bot** | ✅ Yes | Message [@BotFather](https://t.me/BotFather) → `/newbot` |
 | **Gemini** | Recommended (free) | [aistudio.google.com](https://aistudio.google.com/apikey) |
 | **OpenRouter** | Recommended (fallback) | [openrouter.ai](https://openrouter.ai) |
+| **OpenAI** | Optional (embeddings) | [platform.openai.com](https://platform.openai.com/api-keys) |
 | **DeepSeek** | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
 
 > 📖 **See [CONFIGURATION.md](CONFIGURATION.md)** for detailed setup, cost optimization, and heartbeat config.

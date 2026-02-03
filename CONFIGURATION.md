@@ -85,9 +85,47 @@ Add to `~/.openclaw/workspace/.env`:
 GEMINI_API_KEY=AIzaSyXXXXXXXXXXXX
 ```
 
-**Cost:** FREE up to quota limits (~1500 requests/day)
+**Cost:** FREE up to quota limits (~1500 requests/day, 100/min)
 
 **Pro tip:** Get a second Gemini key from another Google account to double your quota. The starter kit tools support multiple keys.
+
+**Note:** If you hit Gemini quota limits frequently, consider switching to OpenAI embeddings (see below).
+
+---
+
+### Optional: OpenAI (Reliable Embeddings)
+
+If you're hitting Gemini quota limits, OpenAI embeddings are more reliable and surprisingly cheap.
+
+| Provider | Cost | Rate Limits |
+|----------|------|-------------|
+| Gemini | FREE | 1500/day, 100/min |
+| OpenAI | $0.02/M tokens | 10,000/min |
+
+1. Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. Create a new API key
+3. Copy the key (starts with `sk-proj-`)
+
+**Setup:**
+
+Add to `~/.openclaw/workspace/.env`:
+```bash
+OPENAI_API_KEY=sk-proj-xxxxx
+```
+
+Then update OpenClaw to use OpenAI for embeddings:
+```bash
+openclaw config set agents.defaults.memorySearch.provider "openai"
+openclaw config set env.vars.OPENAI_API_KEY "sk-proj-xxxxx"
+openclaw gateway restart
+```
+
+**When to switch:**
+- You see "quota exceeded" errors in logs
+- Heavy usage (lots of memory/session indexing)
+- Need rock-solid reliability
+
+**Cost impact:** Minimal. Even heavy usage costs pennies/month.
 
 ---
 
@@ -148,7 +186,9 @@ Your main Claude model (Opus/Sonnet) should plan and orchestrate. Grunt work get
 | Claude Opus 4 | $15/M | $75/M | Complex reasoning, main brain |
 | Claude Sonnet 4 | $3/M | $15/M | General tasks, good balance |
 | Claude Haiku 3.5 | $0.80/M | $4/M | Heartbeats, quick checks |
-| Gemini Flash | FREE | FREE | Research, summaries, embeddings |
+| Gemini Flash | FREE | FREE | Research, summaries |
+| Gemini Embeddings | FREE | - | Memory/RAG (quota limited) |
+| OpenAI Embeddings | $0.02/M | - | Memory/RAG (reliable) |
 | DeepSeek | $0.07/M | $0.14/M | Coding, bulk generation |
 
 ### Recommended Setup
