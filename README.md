@@ -57,12 +57,18 @@ Follow the prompts:
 - Pick your channel (Telegram/Discord)
 - Enter your bot token
 
-### 4. Start
+### 4. Apply optimal settings
+```bash
+~/.openclaw/workspace/scripts/apply-config.sh
+```
+This enables memory search, heartbeat, and other recommended features.
+
+### 5. Start
 ```bash
 openclaw gateway start
 ```
 
-### 5. Message your bot
+### 6. Message your bot
 Open Telegram, find your bot, say "hello". 🎉
 
 ---
@@ -74,7 +80,9 @@ You run the installer
        ↓
 OpenClaw + dependencies installed
        ↓
-You run 'openclaw init' (sets up Anthropic key + channel)
+You run 'openclaw init' (Anthropic key + channel)
+       ↓
+You run 'apply-config.sh' (enables memory, heartbeat)
        ↓
 Start gateway, message your bot
        ↓
@@ -188,8 +196,13 @@ cd ~/.openclaw/workspace && npm install
 cp .env.template .env
 nano .env
 
-# 6. Initialize and start
+# 6. Initialize
 openclaw init
+
+# 7. Apply optimal config
+./scripts/apply-config.sh
+
+# 8. Start
 openclaw gateway start
 ```
 
