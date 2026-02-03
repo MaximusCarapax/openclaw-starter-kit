@@ -37,22 +37,25 @@ This automatically installs Node.js (if missing), OpenClaw, and everything else.
 curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
 ```
 
-### 2. Add your API keys
+### 2. Add your Gemini key (for RAG tools)
 ```bash
 nano ~/.openclaw/workspace/.env
 ```
 
-Fill in:
+Add your free Gemini API key:
 ```
-ANTHROPIC_API_KEY=sk-ant-xxx
-TELEGRAM_BOT_TOKEN=123456:ABC-xxx
+GEMINI_API_KEY=AIza...
 ```
+Get one at: https://aistudio.google.com/apikey (takes 30 seconds)
 
 ### 3. Configure OpenClaw
 ```bash
 openclaw init
 ```
-Follow the prompts. Pick your channel (Telegram/Discord).
+Follow the prompts:
+- Enter your Anthropic API key
+- Pick your channel (Telegram/Discord)
+- Enter your bot token
 
 ### 4. Start
 ```bash
@@ -71,11 +74,11 @@ You run the installer
        ↓
 OpenClaw + dependencies installed
        ↓
-You add API keys, run 'openclaw init'
+You run 'openclaw init' (sets up Anthropic key + channel)
        ↓
 Start gateway, message your bot
        ↓
-Agent reads BOOTSTRAP.md, walks you through setup
+Agent reads BOOTSTRAP.md, walks you through personalization
        ↓
 You have a personalized AI agent
 ```
@@ -89,21 +92,25 @@ The `BOOTSTRAP.md` file is **instructions for the agent**, not for you.
 ```
 ├── BOOTSTRAP.md              # Agent setup guide
 ├── config/
-│   └── optimal-defaults.json # Pre-optimized config
+│   └── config-optimal-defaults.json  # Pre-optimized config
 ├── personas/
-│   ├── SOUL-assistant-mode.md    # Reactive assistant
-│   └── SOUL-cos-mode.md          # Proactive Chief of Staff
+│   ├── SOUL-assistant-mode.md    # Reactive assistant template
+│   └── SOUL-cos-mode.md          # Proactive Chief of Staff template
+├── templates/
+│   └── HEARTBEAT-template.md     # Periodic check-in template
 └── tools/
-    ├── rag.js                # Vector memory (Vectra)
+    ├── rag.js                # Vector memory (Vectra + Gemini)
+    ├── rag-docs.js           # Document ingestion
     ├── gemini.js             # Free AI for grunt work
-    └── deepseek.js           # Cheap coding ($0.14/M tokens)
+    ├── deepseek.js           # Cheap coding (~$0.14/M tokens)
+    └── code.js               # Routes to cheapest model
 ```
 
 ---
 
 ## Operating Modes
 
-During setup, choose:
+During setup, the agent will ask you to choose:
 
 ### Assistant Mode
 - Reactive — waits for your instructions
@@ -122,9 +129,11 @@ During setup, choose:
 | Key | Purpose | Required? | Get it |
 |-----|---------|-----------|--------|
 | **Anthropic** | Claude (brain) | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
-| **Gemini** | Free embeddings/RAG | Recommended | [aistudio.google.com](https://aistudio.google.com) |
+| **Gemini** | RAG embeddings (free) | Recommended | [aistudio.google.com](https://aistudio.google.com/apikey) |
 | DeepSeek | Cheap coding | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
 | Brave | Web search | Optional | [brave.com/search/api](https://brave.com/search/api) |
+
+**Note:** Anthropic key and channel tokens are configured via `openclaw init`. Other keys go in `.env`.
 
 ---
 
@@ -134,7 +143,7 @@ During setup, choose:
 |-------|-----|------|
 | Claude Opus | Brain | ~$15-75/M tokens |
 | DeepSeek | Coding | ~$0.14/M tokens |
-| Gemini | Research | FREE |
+| Gemini | Research, RAG | FREE |
 
 **Typical:** $5-15/day active use.
 
@@ -175,7 +184,7 @@ npm install -g openclaw
 # 4. Install dependencies
 cd ~/.openclaw/workspace && npm install
 
-# 5. Copy and edit .env
+# 5. Add Gemini key to .env
 cp .env.template .env
 nano .env
 

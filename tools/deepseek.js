@@ -10,17 +10,29 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// Load API key
+// Load API key (checks .env first, then credentials.json)
 function getApiKey() {
+  // 1. Check environment variable
   if (process.env.DEEPSEEK_API_KEY) return process.env.DEEPSEEK_API_KEY;
   
+  // 2. Check .env file in workspace
+  try {
+    const envPath = path.join(__dirname, '..', '.env');
+    if (fs.existsSync(envPath)) {
+      const env = fs.readFileSync(envPath, 'utf8');
+      const match = env.match(/DEEPSEEK_API_KEY=(.+)/);
+      if (match) return match[1].trim();
+    }
+  } catch (e) {}
+  
+  // 3. Check credentials.json
   try {
     const credsPath = path.join(process.env.HOME, '.openclaw/secrets/credentials.json');
     const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
     if (creds.deepseek?.apiKey) return creds.deepseek.apiKey;
   } catch (e) {}
   
-  console.error('Error: DEEPSEEK_API_KEY not found');
+  console.error('Error: DEEPSEEK_API_KEY not found in .env or credentials.json');
   process.exit(1);
 }
 

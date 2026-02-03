@@ -156,17 +156,20 @@ fi
 # Create .env if missing
 if [ ! -f .env ]; then
   cp .env.template .env 2>/dev/null || cat > .env << 'EOF'
-# Required
-ANTHROPIC_API_KEY=
+# Workspace Tools API Keys
+# (Anthropic & channel tokens are configured via 'openclaw init')
 
-# Channel (pick one)
-TELEGRAM_BOT_TOKEN=
-DISCORD_BOT_TOKEN=
-
-# RAG embeddings (free!)
+# Gemini API (FREE!) - for RAG embeddings
+# Get one: https://aistudio.google.com/apikey
 GEMINI_API_KEY=
+
+# DeepSeek API - for cheap coding (~$0.14/M tokens)
+DEEPSEEK_API_KEY=
+
+# Brave Search API - for web search
+BRAVE_API_KEY=
 EOF
-  success "Created .env (add your API keys)"
+  success "Created .env (add your Gemini key for RAG)"
 else
   success ".env exists"
 fi

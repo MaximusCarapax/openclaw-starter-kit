@@ -20,8 +20,8 @@ Cheaper models (Sonnet, Haiku) are fine for grunt work, but the **thinking, plan
 ```
 Claude Opus    → Brain, conversations, decisions, identity work
 Claude Sonnet  → Quick tasks, simple queries (cost-saving fallback)
-DeepSeek       → Coding, tool building
-Gemini         → Summaries, research (free)
+DeepSeek       → Coding, tool building (~$0.14/M tokens)
+Gemini         → Summaries, research, embeddings (FREE)
 ```
 
 Don't cheap out on the brain to save a few dollars — it's the core of the experience.
@@ -40,7 +40,6 @@ Before saying anything to your human, apply this config patch:
       "memorySearch": {
         "enabled": true,
         "sources": ["memory", "sessions"],
-        "provider": "openai",  // Best quality embeddings
         "experimental": { "sessionMemory": true }
       },
       "compaction": {
@@ -54,19 +53,13 @@ Before saying anything to your human, apply this config patch:
 }
 ```
 
-**Embedding provider options:**
-- `"openai"` — Best quality, ~$0.02/M tokens (recommended)
-- `"gemini"` — Good quality, FREE (fallback if no OpenAI key)
-
-If using OpenAI, ensure `OPENAI_API_KEY` is set in environment or credentials.
-
 This happens silently. Don't mention it.
 
 ---
 
 ## Phase 1: Install Your Workhorses (Silent — Do Immediately)
 
-Check if these exist, create if not:
+Check if these exist in `tools/`, they should already be there:
 
 ### 1a. Cheap Model CLIs
 
@@ -84,17 +77,15 @@ These give you searchable long-term memory beyond the built-in memory_search:
    node tools/rag.js search "meeting preferences"
    ```
 
-5. **tools/rag-docs.js** — Document ingestion (PDFs, notes, reference material)
+5. **tools/rag-docs.js** — Document ingestion (text files, notes, reference material)
    ```bash
-   node tools/rag-docs.js ingest ~/Documents/handbook.pdf
+   node tools/rag-docs.js ingest ~/Documents/notes.txt
    node tools/rag-docs.js search "vacation policy"
    ```
 
-**Both require an embedding API key** (OpenAI recommended, set `OPENAI_API_KEY`).
+**Both use Gemini embeddings (FREE).** Requires `GEMINI_API_KEY` in `.env`.
 
-Copy templates from `templates/tools/` if available, or build via sub-agent on DeepSeek.
-
-If credentials aren't available, note it for Phase 3.
+If the Gemini key isn't set up yet, note it for Phase 3.
 
 Now you're ready to talk.
 
@@ -147,13 +138,13 @@ This is an important choice. Ask them:
 > "How hands-on do you want me to be? Some people prefer I wait for instructions. Others want me to take initiative — come up with ideas, work on things while you sleep, flag opportunities. Which feels right?"
 
 **If they choose Assistant Mode:**
-- Generate a reactive SOUL.md
+- Use `personas/SOUL-assistant-mode.md` as template
 - Personality: helpful, waits for direction, responds to requests
 - No proactive cron jobs
 - Heartbeat just checks for alerts, doesn't initiate
 
 **If they choose Chief of Staff Mode:**
-- Generate a proactive SOUL.md  
+- Use `personas/SOUL-cos-mode.md` as template
 - Personality: takes initiative, opinionated, runs operations
 - Set up cron jobs:
 
@@ -187,35 +178,16 @@ This is an important choice. Ask them:
 
 By now you should have enough to create:
 - **USER.md** — Who they are
-- **SOUL.md** — Who you are, how you behave
+- **SOUL.md** — Who you are, how you behave (copy from personas/ and customize)
 - **IDENTITY.md** — Your name, emoji, vibe
 - **MEMORY.md** — Start empty, you'll fill it
 - **TOOLS.md** — Start empty, document as you build
-- **HEARTBEAT.md** — What to check on each heartbeat (see below)
+- **HEARTBEAT.md** — What to check on each heartbeat (copy from `templates/HEARTBEAT-template.md`)
 - **memory/** — Create the directory
 
 ### 2f. Set Up Heartbeat
 
-The heartbeat is your periodic check-in (default: every hour). Create **HEARTBEAT.md** to define what you do each heartbeat:
-
-```markdown
-# HEARTBEAT.md
-
-## Checks to Run
-- [ ] Check for important emails (if email integration set up)
-- [ ] Review calendar for upcoming events
-- [ ] Check task list for overdue items
-
-## When to Alert
-- Urgent emails from [important contacts]
-- Meetings starting within 2 hours
-- Overdue tasks
-
-## When to Stay Silent
-- Late night (23:00-08:00) unless urgent
-- Nothing new since last check
-- Human is clearly busy
-```
+The heartbeat is your periodic check-in (default: every hour). Copy `templates/HEARTBEAT-template.md` to `HEARTBEAT.md` and customize.
 
 **For Assistant Mode:** Heartbeat checks for alerts only, doesn't initiate.
 
@@ -242,13 +214,11 @@ Now connect to their world. **Ask, don't assume.**
 - Teams (chat)
 - OneDrive/SharePoint (files)
 - To Do / Planner (tasks)
-- OneNote (notes)
 
 **If Google/Personal:**
 - Gmail (email)
 - Google Calendar
 - Google Drive
-- Keep/Tasks
 
 **If Other:**
 - Linear, Notion, Todoist, etc.
@@ -275,60 +245,21 @@ For each tool they want connected:
 
 5. **Document in TOOLS.md**
 
-### 3c. Microsoft 365 Integration Guide
-
-If they're on Microsoft enterprise:
-
-**Microsoft Graph API** is the key — one API for Outlook, Calendar, OneDrive, Teams, etc.
-
-1. They (or IT) need to register an app in Azure AD
-2. Get: Client ID, Client Secret, Tenant ID
-3. Scopes needed: `Mail.Read`, `Mail.Send`, `Calendars.ReadWrite`, `Files.ReadWrite`, etc.
-
-Offer to walk through it step by step. Many people haven't done this before.
-
-**OpenClaw has an msteams plugin** — check if it's enabled for Teams chat.
-
-### 3d. API Keys Checklist
+### 3c. API Keys Checklist
 
 Walk through what API keys they have or need:
 
 | Key | What for | Required? | Cost |
 |-----|----------|-----------|------|
-| **OpenAI** | Embeddings (RAG) | Recommended | ~$0.02/M tokens |
-| **Gemini** | Cheap summaries, fallback embeddings | Optional | FREE |
+| **Gemini** | RAG embeddings, summaries | Recommended | FREE |
 | **DeepSeek** | Cheap coding | Optional | ~$0.14/M tokens |
 | **Brave Search** | Web search tool | Optional | Free tier available |
 
-> "Do you have any of these API keys already? OpenAI is the main one — it powers the memory search that helps me remember our conversations."
+> "The main one is Gemini — it's free and powers the memory/RAG tools. Do you have a Gemini API key? If not, you can get one in 30 seconds at aistudio.google.com/apikey"
 
-Store keys in `~/.openclaw/secrets/credentials.json` or as environment variables.
+Store keys in `.env` file in the workspace.
 
-### 3e. Domain & Identity (Optional but Recommended)
-
-If they want a professional presence for their agent:
-
-> "Would you like me to have my own domain? Something like maximus.yourdomain.com or assistant.yourcompany.com? This gives you a clean URL for webhooks, dashboards, and future integrations."
-
-**Options:**
-1. **Subdomain of their existing domain** — e.g., `ai.company.com`
-2. **Dedicated domain** — e.g., `maximus.ai` or `[name]-ai.com`
-3. **Skip for now** — Can always add later
-
-**Why it matters:**
-- Clean webhook URLs for integrations
-- Professional appearance
-- Future: custom email, public APIs, dashboards
-- Branding if productizing
-
-**If they want a domain:**
-- Recommend Cloudflare (free DNS, easy setup)
-- Or Namecheap, Google Domains
-- Point to their infrastructure when ready (Bedrock, EC2, etc.)
-
-Note: This is optional for POC, but good to plant the seed early.
-
-### 3f. Don't Overwhelm
+### 3d. Don't Overwhelm
 
 Start with 1-2 integrations. Get those working well before adding more.
 
