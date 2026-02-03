@@ -94,21 +94,23 @@ echo "   Get one at: https://aistudio.google.com/apikey"
 echo ""
 read -p "   Enter your Gemini API key (or press Enter to skip): " GEMINI_KEY
 
-# --- DeepSeek (Optional) ---
+# --- DeepSeek (Recommended for cost efficiency) ---
 echo ""
-echo -e "${CYAN}4. DeepSeek API Key ${YELLOW}(optional, ~\$0.14/M tokens)${NC}"
-echo "   Cheap coding workhorse for building tools."
+echo -e "${CYAN}4. DeepSeek API Key ${GREEN}(recommended - only \$0.14/M tokens!)${NC}"
+echo "   Your cheap coding workhorse. 100x cheaper than Claude for code tasks."
 echo "   Get one at: https://platform.deepseek.com"
 echo ""
 read -p "   Enter your DeepSeek API key (or press Enter to skip): " DEEPSEEK_KEY
 
-# --- Aider (Optional) ---
+# --- Aider (Recommended for coding) ---
 echo ""
-echo -e "${CYAN}5. Install Aider? ${YELLOW}(optional)${NC}"
-echo "   Aider is a powerful AI coding assistant that works with DeepSeek."
-echo "   Great for multi-file edits, git-aware, auto-commits."
+echo -e "${CYAN}5. Install Aider? ${GREEN}(recommended)${NC}"
+echo "   AI coding assistant that works with DeepSeek."
+echo "   Git-aware, multi-file edits, auto-commits."
+echo "   DeepSeek + Aider = powerful coding for pennies."
 echo ""
-read -p "   Install Aider? [y/N]: " INSTALL_AIDER
+read -p "   Install Aider? [Y/n]: " INSTALL_AIDER
+INSTALL_AIDER=${INSTALL_AIDER:-Y}  # Default to Yes
 
 # =============================================================================
 # Apply Configuration
