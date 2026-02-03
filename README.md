@@ -41,7 +41,10 @@ Open Telegram, find your bot, say "hello". 🎉
 | **Anthropic** | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
 | **Telegram bot** | ✅ Yes | Message [@BotFather](https://t.me/BotFather) → `/newbot` |
 | **Gemini** | Recommended (free) | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| **OpenRouter** | Recommended (fallback) | [openrouter.ai](https://openrouter.ai) |
 | **DeepSeek** | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
+
+> 📖 **See [CONFIGURATION.md](CONFIGURATION.md)** for detailed setup, cost optimization, and heartbeat config.
 
 ---
 
@@ -113,17 +116,49 @@ During personalization, the agent will ask you to choose:
 - Works overnight on your backlog
 - Reports what it accomplished
 
+### Heartbeats (Proactive Mode)
+
+Heartbeats let your agent wake up periodically to check things — email, calendar, social mentions — without you prompting.
+
+```json
+// In openclaw.json
+{
+  "agents": {
+    "defaults": {
+      "heartbeat": {
+        "every": "1h",
+        "model": "anthropic/claude-3-5-haiku-latest"
+      }
+    }
+  }
+}
+```
+
+Create `HEARTBEAT.md` in your workspace to tell your agent what to check.
+
+> 📖 **See [CONFIGURATION.md](CONFIGURATION.md#heartbeat-setup)** for full heartbeat setup.
+
 ---
 
 ## Cost
 
 | Model | Use | Cost |
 |-------|-----|------|
-| Claude | Brain | ~$3-15/M tokens |
+| Claude Sonnet | Brain (recommended) | ~$3-15/M tokens |
+| Claude Haiku | Heartbeats | ~$0.80-4/M tokens |
 | DeepSeek | Coding | ~$0.14/M tokens |
 | Gemini | Research, RAG | FREE |
 
 **Typical:** $5-15/day active use.
+
+### Cost Optimization Tips
+
+1. **Use Haiku for heartbeats** — Periodic checks don't need the smartest model
+2. **Use Sonnet as default** — Good balance of smart + affordable
+3. **Delegate to Gemini** — Research and summaries are free
+4. **Use DeepSeek for coding** — 100x cheaper than Claude for code generation
+
+> 📖 **See [CONFIGURATION.md](CONFIGURATION.md)** for detailed cost optimization setup.
 
 ---
 
