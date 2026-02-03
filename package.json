@@ -8,8 +8,9 @@
     "install:browser": "npx playwright install chromium"
   },
   "dependencies": {
-    "vectra": "^0.5.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "otpauth": "^9.4.1",
+    "vectra": "^0.5.0"
   },
   "optionalDependencies": {
     "playwright": "^1.40.0",

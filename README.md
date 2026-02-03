@@ -74,6 +74,7 @@ You have a personalized AI agent
 │   ├── gmail.js              # Email (read, search, draft)
 │   ├── google-calendar.js    # Calendar (events, free time)
 │   ├── notion.js             # Notes, databases, tasks
+│   ├── totp.js               # 2FA code generator (no phone needed)
 │   ├── weather.js            # Weather lookup (free)
 │   ├── web-scraper.js        # Extract content from URLs
 │   └── youtube-transcript.js # Get video transcripts
@@ -90,6 +91,7 @@ You have a personalized AI agent
 | **gmail.js** | Read inbox, search, draft emails | Google OAuth |
 | **google-calendar.js** | View events, find free time, create events | Google OAuth |
 | **notion.js** | Pages, databases, tasks | Notion token |
+| **totp.js** | Generate 2FA codes (no phone needed) | None needed |
 | **weather.js** | Current weather & forecasts | None needed |
 | **web-scraper.js** | Extract text from any URL | None needed |
 | **youtube-transcript.js** | Get transcripts from videos | None needed |
