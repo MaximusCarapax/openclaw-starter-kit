@@ -70,6 +70,7 @@ You have a personalized AI agent
 │   ├── SOUL-assistant-mode.md    # Reactive assistant template
 │   └── SOUL-cos-mode.md          # Proactive Chief of Staff template
 ├── tools/
+│   ├── aider.js              # AI coding via Aider (git-aware, multi-file)
 │   ├── rag.js                # Vector memory (free Gemini embeddings)
 │   ├── gemini.js             # Free AI for grunt work
 │   ├── deepseek.js           # Cheap coding (~$0.14/M tokens)
@@ -162,19 +163,30 @@ Create `HEARTBEAT.md` in your workspace to tell your agent what to check.
 
 ---
 
-## Optional: Aider for Coding
+## Aider: AI-Powered Coding
 
-The setup wizard can install [Aider](https://aider.chat) — a powerful AI coding assistant:
+[Aider](https://aider.chat) is included by default — a powerful AI coding assistant that edits files directly, understands git, and auto-commits.
 
+**Your agent can use it:**
 ```bash
-# After setup, use with DeepSeek:
-aider --model deepseek/deepseek-chat
-
-# Or add an alias:
-alias code='aider --model deepseek/deepseek-chat'
+node tools/aider.js "add rate limiting" --files src/api.js
+node tools/aider.js "refactor to typescript" --files src/*.js
 ```
 
-Aider is git-aware, does multi-file edits, and auto-commits. Much better than raw CLI.
+**Or use it directly:**
+```bash
+aider --model deepseek/deepseek-chat src/api.js
+
+# Useful aliases:
+alias code='aider --model deepseek/deepseek-chat'
+alias codex='aider --model openrouter/anthropic/claude-sonnet-4'
+```
+
+**Why Aider:**
+- Git-aware (auto-commits with good messages)
+- Multi-file edits in one shot
+- Uses DeepSeek by default ($0.14/M tokens)
+- Works with any model via OpenRouter
 
 ---
 

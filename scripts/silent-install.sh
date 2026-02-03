@@ -162,6 +162,29 @@ else
   warn "Browser install skipped"
 fi
 
+# Install Python & Aider (for AI-powered coding)
+log "Setting up Aider (AI coding assistant)..."
+if command -v pip3 &> /dev/null || command -v pip &> /dev/null; then
+  PIP_CMD=$(command -v pip3 || command -v pip)
+  if ! command -v aider &> /dev/null; then
+    $PIP_CMD install --quiet aider-chat 2>/dev/null && success "Aider installed" || {
+      warn "Aider install failed (optional - install later with: pip install aider-chat)"
+    }
+  else
+    success "Aider already installed"
+  fi
+else
+  # Try to install pip
+  if [ -f /etc/debian_version ]; then
+    sudo apt-get install -y python3-pip 2>/dev/null && pip3 install --quiet aider-chat && success "Aider installed" || warn "Aider skipped (install Python 3 + pip)"
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS usually has Python
+    python3 -m pip install --quiet aider-chat 2>/dev/null && success "Aider installed" || warn "Aider skipped (install with: pip install aider-chat)"
+  else
+    warn "Aider skipped - install Python 3 + pip, then: pip install aider-chat"
+  fi
+fi
+
 # Create .env if missing
 if [ ! -f .env ]; then
   cp .env.template .env 2>/dev/null || cat > .env << 'EOF'
