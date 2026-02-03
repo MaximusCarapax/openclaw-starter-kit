@@ -70,11 +70,29 @@ You have a personalized AI agent
 │   ├── rag.js                # Vector memory (free Gemini embeddings)
 │   ├── gemini.js             # Free AI for grunt work
 │   ├── deepseek.js           # Cheap coding (~$0.14/M tokens)
-│   └── code.js               # Routes to cheapest model
+│   ├── code.js               # Routes to cheapest model
+│   ├── gmail.js              # Email (read, search, draft)
+│   ├── google-calendar.js    # Calendar (events, free time)
+│   ├── notion.js             # Notes, databases, tasks
+│   ├── weather.js            # Weather lookup (free)
+│   ├── web-scraper.js        # Extract content from URLs
+│   └── youtube-transcript.js # Get video transcripts
 └── scripts/
     ├── silent-install.sh     # Main installer
-    └── setup.sh              # Setup wizard
+    ├── setup.sh              # Setup wizard
+    └── update.sh             # Pull updates
 ```
+
+### Pre-built Integrations (All Free!)
+
+| Tool | What it does | API Key? |
+|------|--------------|----------|
+| **gmail.js** | Read inbox, search, draft emails | Google OAuth |
+| **google-calendar.js** | View events, find free time, create events | Google OAuth |
+| **notion.js** | Pages, databases, tasks | Notion token |
+| **weather.js** | Current weather & forecasts | None needed |
+| **web-scraper.js** | Extract text from any URL | None needed |
+| **youtube-transcript.js** | Get transcripts from videos | None needed |
 
 ---
 
