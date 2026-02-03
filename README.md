@@ -1,124 +1,73 @@
 # OpenClaw Starter Kit
 
-Your AI agent in under a minute. No Docker. No Python. Just run one command.
+Your AI agent in under 5 minutes. No Docker. No Python. Two commands.
 
-## Quick Start (One Command)
+## Quick Start
 
+### 1. Install
 ```bash
 curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
 ```
 
-This automatically installs Node.js (if missing), OpenClaw, and everything else.
-
----
-
-## What You Need (Before Running)
-
-### 1. Anthropic API Key (Required)
-- Sign up: https://console.anthropic.com
-- Create an API key
-- This powers Claude (the brain)
-
-### 2. Messaging Channel (Pick One)
-
-| Channel | Difficulty | How |
-|---------|------------|-----|
-| **Telegram** | ⭐ Easiest | Message [@BotFather](https://t.me/BotFather), create bot, get token |
-| **Discord** | ⭐⭐ Easy | [Developer Portal](https://discord.com/developers), create app + bot |
-
-**Recommended:** Start with Telegram — fastest path to "hello world".
-
----
-
-## Step by Step
-
-### 1. Run the installer
+### 2. Setup
 ```bash
-curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
+~/.openclaw/workspace/scripts/setup.sh
 ```
 
-### 2. Add your Gemini key (for RAG tools)
-```bash
-nano ~/.openclaw/workspace/.env
-```
+The setup wizard will ask for your API keys, configure everything, and start your agent.
 
-Add your free Gemini API key:
-```
-GEMINI_API_KEY=AIza...
-```
-Get one at: https://aistudio.google.com/apikey (takes 30 seconds)
-
-### 3. Configure OpenClaw
-```bash
-openclaw init
-```
-Follow the prompts:
-- Enter your Anthropic API key
-- Pick your channel (Telegram/Discord)
-- Enter your bot token
-
-### 4. Apply optimal settings
-```bash
-~/.openclaw/workspace/scripts/apply-config.sh
-```
-This enables memory search, heartbeat, and other recommended features.
-
-### 5. Start
-```bash
-openclaw gateway start
-```
-
-### 6. Message your bot
+### 3. Message your bot
 Open Telegram, find your bot, say "hello". 🎉
+
+---
+
+## What You Need
+
+| Key | Required? | Get it |
+|-----|-----------|--------|
+| **Anthropic** | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
+| **Telegram bot** | ✅ Yes | Message [@BotFather](https://t.me/BotFather) → `/newbot` |
+| **Gemini** | Recommended (free) | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| **DeepSeek** | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
 
 ---
 
 ## How It Works
 
 ```
-You run the installer
+curl ... | bash     →  Installs Node.js, OpenClaw, dependencies
        ↓
-OpenClaw + dependencies installed
+./setup.sh          →  Asks for API keys, configures everything, starts gateway
        ↓
-You run 'openclaw init' (Anthropic key + channel)
-       ↓
-You run 'apply-config.sh' (enables memory, heartbeat)
-       ↓
-Start gateway, message your bot
-       ↓
-Agent reads BOOTSTRAP.md, walks you through personalization
+Message your bot    →  Agent reads BOOTSTRAP.md, guides you through personalization
        ↓
 You have a personalized AI agent
 ```
-
-The `BOOTSTRAP.md` file is **instructions for the agent**, not for you.
 
 ---
 
 ## What's Included
 
 ```
-├── BOOTSTRAP.md              # Agent setup guide
-├── config/
-│   └── config-optimal-defaults.json  # Pre-optimized config
+├── BOOTSTRAP.md              # Agent's setup guide (it reads this)
 ├── personas/
 │   ├── SOUL-assistant-mode.md    # Reactive assistant template
 │   └── SOUL-cos-mode.md          # Proactive Chief of Staff template
-├── templates/
-│   └── HEARTBEAT-template.md     # Periodic check-in template
-└── tools/
-    ├── rag.js                # Vector memory (Vectra + Gemini)
-    ├── rag-docs.js           # Document ingestion
-    ├── gemini.js             # Free AI for grunt work
-    ├── deepseek.js           # Cheap coding (~$0.14/M tokens)
-    └── code.js               # Routes to cheapest model
+├── tools/
+│   ├── rag.js                # Vector memory (free Gemini embeddings)
+│   ├── gemini.js             # Free AI for grunt work
+│   ├── deepseek.js           # Cheap coding (~$0.14/M tokens)
+│   └── code.js               # Routes to cheapest model
+└── scripts/
+    ├── silent-install.sh     # Main installer
+    └── setup.sh              # Setup wizard
 ```
 
 ---
 
 ## Operating Modes
 
-During setup, the agent will ask you to choose:
+During personalization, the agent will ask you to choose:
 
 ### Assistant Mode
 - Reactive — waits for your instructions
@@ -132,28 +81,31 @@ During setup, the agent will ask you to choose:
 
 ---
 
-## API Keys
-
-| Key | Purpose | Required? | Get it |
-|-----|---------|-----------|--------|
-| **Anthropic** | Claude (brain) | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
-| **Gemini** | RAG embeddings (free) | Recommended | [aistudio.google.com](https://aistudio.google.com/apikey) |
-| DeepSeek | Cheap coding | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
-| Brave | Web search | Optional | [brave.com/search/api](https://brave.com/search/api) |
-
-**Note:** Anthropic key and channel tokens are configured via `openclaw init`. Other keys go in `.env`.
-
----
-
 ## Cost
 
 | Model | Use | Cost |
 |-------|-----|------|
-| Claude Opus | Brain | ~$15-75/M tokens |
+| Claude | Brain | ~$3-15/M tokens |
 | DeepSeek | Coding | ~$0.14/M tokens |
 | Gemini | Research, RAG | FREE |
 
 **Typical:** $5-15/day active use.
+
+---
+
+## Optional: Aider for Coding
+
+The setup wizard can install [Aider](https://aider.chat) — a powerful AI coding assistant:
+
+```bash
+# After setup, use with DeepSeek:
+aider --model deepseek/deepseek-chat
+
+# Or add an alias:
+alias code='aider --model deepseek/deepseek-chat'
+```
+
+Aider is git-aware, does multi-file edits, and auto-commits. Much better than raw CLI.
 
 ---
 
@@ -165,9 +117,11 @@ npm install -g openclaw
 ```
 
 **Bot not responding**
-1. Check gateway: `openclaw gateway status`
-2. Check bot token is correct
-3. Make sure you messaged the bot first
+```bash
+openclaw gateway status   # Check if running
+openclaw gateway logs     # View logs
+openclaw gateway restart  # Restart
+```
 
 **Skip browser install (saves ~400MB)**
 ```bash
@@ -176,34 +130,16 @@ SKIP_BROWSER=true curl -fsSL ... | bash
 
 ---
 
-## Manual Install (Alternative)
+## Manual Setup (Alternative)
 
-If you prefer not to use the one-liner:
+If you prefer not to use the setup wizard:
 
 ```bash
-# 1. Install Node.js 18+ (https://nodejs.org)
-
-# 2. Clone the repo
-git clone https://github.com/MaximusCarapax/openclaw-starter-kit ~/.openclaw/workspace
-
-# 3. Install OpenClaw
-npm install -g openclaw
-
-# 4. Install dependencies
-cd ~/.openclaw/workspace && npm install
-
-# 5. Add Gemini key to .env
-cp .env.template .env
-nano .env
-
-# 6. Initialize
-openclaw init
-
-# 7. Apply optimal config
-./scripts/apply-config.sh
-
-# 8. Start
-openclaw gateway start
+# After install, manually configure:
+nano ~/.openclaw/workspace/.env          # Add Gemini/DeepSeek keys
+openclaw init                            # Anthropic key + channel
+~/.openclaw/workspace/scripts/apply-config.sh  # Optimal settings
+openclaw gateway start                   # Start
 ```
 
 ---
