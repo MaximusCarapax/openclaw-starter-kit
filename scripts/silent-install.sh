@@ -121,8 +121,17 @@ chmod 700 "$SECRETS_DIR"
 # Clone or update starter kit
 log "Getting starter kit..."
 if [ -d "$WORKSPACE/.git" ]; then
-  cd "$WORKSPACE" && git pull --quiet
-  success "Updated existing workspace"
+  cd "$WORKSPACE"
+  # Try to pull, but if it fails (no tracking), re-clone
+  if git pull origin main --quiet 2>/dev/null; then
+    success "Updated existing workspace"
+  else
+    log "Git pull failed, re-cloning..."
+    cd /tmp
+    rm -rf "$WORKSPACE"
+    git clone --quiet https://github.com/MaximusCarapax/openclaw-starter-kit.git "$WORKSPACE"
+    success "Re-cloned starter kit"
+  fi
 else
   rm -rf "$WORKSPACE" 2>/dev/null || true
   git clone --quiet https://github.com/MaximusCarapax/openclaw-starter-kit.git "$WORKSPACE"
