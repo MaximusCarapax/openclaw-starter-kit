@@ -18,6 +18,7 @@ NC='\033[0m'
 
 WORKSPACE="${WORKSPACE:-$HOME/.openclaw/workspace}"
 SECRETS_DIR="$HOME/.openclaw/secrets"
+NODE_VERSION_REQUIRED=18
 
 log() { echo -e "${BLUE}[openclaw]${NC} $1"; }
 success() { echo -e "${GREEN}[✓]${NC} $1"; }
@@ -31,19 +32,86 @@ echo -e "${BLUE}║${NC}            Your AI Agent in Under a Minute             
 echo -e "${BLUE}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check Node.js
+# =============================================================================
+# Node.js Detection & Auto-Install
+# =============================================================================
+
+install_nodejs() {
+  log "Installing Node.js 22.x..."
+  
+  # Detect OS
+  if [ -f /etc/debian_version ]; then
+    # Debian/Ubuntu
+    log "Detected Debian/Ubuntu"
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+  elif [ -f /etc/redhat-release ]; then
+    # RHEL/CentOS/Fedora
+    log "Detected RHEL/CentOS/Fedora"
+    curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+    sudo yum install -y nodejs
+  elif [ -f /etc/arch-release ]; then
+    # Arch Linux
+    log "Detected Arch Linux"
+    sudo pacman -S --noconfirm nodejs npm
+  elif [ -f /etc/alpine-release ]; then
+    # Alpine
+    log "Detected Alpine"
+    sudo apk add --no-cache nodejs npm
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    log "Detected macOS"
+    if command -v brew &> /dev/null; then
+      brew install node
+    else
+      error "Please install Homebrew first: https://brew.sh"
+    fi
+  else
+    error "Unsupported OS. Please install Node.js 18+ manually: https://nodejs.org"
+  fi
+}
+
+check_nodejs() {
+  if ! command -v node &> /dev/null; then
+    warn "Node.js not found"
+    install_nodejs
+  else
+    NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt "$NODE_VERSION_REQUIRED" ]; then
+      warn "Node.js $NODE_VERSION found, but $NODE_VERSION_REQUIRED+ required"
+      install_nodejs
+    fi
+  fi
+}
+
+# =============================================================================
+# Main Installation
+# =============================================================================
+
 log "Checking prerequisites..."
-if ! command -v node &> /dev/null; then
-  error "Node.js not found. Install Node.js 18+: https://nodejs.org"
-fi
-NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-[ "$NODE_VERSION" -lt 18 ] && error "Node.js 18+ required (found: $(node -v))"
+
+# Check/Install Node.js
+check_nodejs
 success "Node.js $(node -v)"
 
+# Check npm
 if ! command -v npm &> /dev/null; then
-  error "npm not found"
+  error "npm not found (should have been installed with Node.js)"
 fi
 success "npm $(npm -v)"
+
+# Check git
+if ! command -v git &> /dev/null; then
+  log "Installing git..."
+  if [ -f /etc/debian_version ]; then
+    sudo apt-get install -y git
+  elif [ -f /etc/redhat-release ]; then
+    sudo yum install -y git
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    xcode-select --install 2>/dev/null || true
+  fi
+fi
+success "git $(git --version | cut -d' ' -f3)"
 
 # Create directories
 log "Setting up directories..."
@@ -72,15 +140,17 @@ success "OpenClaw CLI installed"
 
 # Install workspace dependencies
 log "Installing dependencies..."
-npm install --quiet
+npm install --quiet 2>/dev/null || npm install
 success "Dependencies ready"
 
 # Optional: Install browser
-if [ "${INSTALL_BROWSER:-true}" = "true" ]; then
-  log "Installing browser (optional, ~400MB)..."
+if [ "${SKIP_BROWSER:-false}" != "true" ]; then
+  log "Installing browser (skip with SKIP_BROWSER=true)..."
   npx playwright install chromium 2>/dev/null && success "Chromium installed" || {
     warn "Browser install skipped (run 'npm run install:browser' later)"
   }
+else
+  warn "Browser install skipped"
 fi
 
 # Create .env if missing
@@ -122,9 +192,6 @@ echo ""
 echo "     Required:"
 echo "     - ANTHROPIC_API_KEY (https://console.anthropic.com)"
 echo "     - TELEGRAM_BOT_TOKEN or DISCORD_BOT_TOKEN"
-echo ""
-echo "     Optional (free, for RAG):"
-echo "     - GEMINI_API_KEY (https://aistudio.google.com/apikey)"
 echo ""
 echo "  2. Configure your agent:"
 echo "     openclaw init"

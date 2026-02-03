@@ -1,210 +1,142 @@
 # OpenClaw Starter Kit
 
-A structured bootstrap template for setting up AI agents with [OpenClaw](https://github.com/openclaw/openclaw).
+Your AI agent in under a minute. No Docker. No Python. Just run one command.
 
-## Prerequisites
+## Quick Start (One Command)
 
-Before you start:
+```bash
+curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
+```
 
-1. **Install OpenClaw**
-   ```bash
-   npm install -g openclaw
-   ```
-   Or see full instructions: https://github.com/openclaw/openclaw
-
-2. **Get an Anthropic API Key** (Required)
-   - Sign up: https://console.anthropic.com
-   - Create an API key
-   - This powers Claude (the brain)
-
-3. **Set up a Messaging Channel** (pick one)
-   
-   | Channel | Difficulty | How |
-   |---------|------------|-----|
-   | **Telegram** | ⭐ Easiest | Message [@BotFather](https://t.me/BotFather), create bot, get token |
-   | **Discord** | ⭐⭐ Easy | [Developer Portal](https://discord.com/developers), create app + bot |
-   | **Slack** | ⭐⭐⭐ Medium | Create Slack App, configure OAuth |
-
-   **Recommended:** Start with Telegram — fastest path to "hello world".
+This automatically installs Node.js (if missing), OpenClaw, and everything else.
 
 ---
 
-## Quick Start
+## What You Need (Before Running)
 
-### 1. Clone this repo as your workspace
+### 1. Anthropic API Key (Required)
+- Sign up: https://console.anthropic.com
+- Create an API key
+- This powers Claude (the brain)
+
+### 2. Messaging Channel (Pick One)
+
+| Channel | Difficulty | How |
+|---------|------------|-----|
+| **Telegram** | ⭐ Easiest | Message [@BotFather](https://t.me/BotFather), create bot, get token |
+| **Discord** | ⭐⭐ Easy | [Developer Portal](https://discord.com/developers), create app + bot |
+
+**Recommended:** Start with Telegram — fastest path to "hello world".
+
+---
+
+## Step by Step
+
+### 1. Run the installer
 ```bash
-git clone https://github.com/MaximusCarapax/openclaw-starter-kit ~/.openclaw/workspace
+curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
 ```
 
-### 2. Set up your API keys
-
-Create `~/.openclaw/secrets/credentials.json`:
-```json
-{
-  "anthropic": {
-    "apiKey": "sk-ant-api03-..."
-  },
-  "openai": {
-    "apiKey": "sk-..."
-  },
-  "deepseek": {
-    "apiKey": "sk-..."
-  },
-  "gemini": {
-    "apiKey": "AIza..."
-  }
-}
+### 2. Add your API keys
+```bash
+nano ~/.openclaw/workspace/.env
 ```
 
-**Required:** `anthropic`  
-**Recommended:** `openai` (for embeddings/memory search)  
-**Optional:** `deepseek`, `gemini` (cheap model routing)
-
-### 3. Configure your messaging channel
-
-For Telegram, add to `~/.openclaw/openclaw.json`:
-```json
-{
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "botToken": "YOUR_BOT_TOKEN_FROM_BOTFATHER",
-      "dmPolicy": "pairing",
-      "streamMode": "partial"
-    }
-  }
-}
+Fill in:
+```
+ANTHROPIC_API_KEY=sk-ant-xxx
+TELEGRAM_BOT_TOKEN=123456:ABC-xxx
 ```
 
-For Discord, see: https://docs.openclaw.ai/channels/discord
+### 3. Configure OpenClaw
+```bash
+openclaw init
+```
+Follow the prompts. Pick your channel (Telegram/Discord).
 
-### 4. Start OpenClaw
+### 4. Start
 ```bash
 openclaw gateway start
 ```
 
 ### 5. Message your bot
-
-Open Telegram, find your bot, send `/start` or just say "hello".
+Open Telegram, find your bot, say "hello". 🎉
 
 ---
 
 ## How It Works
 
 ```
-You clone this repo
+You run the installer
        ↓
-You start OpenClaw + connect via Telegram/Discord
+OpenClaw + dependencies installed
        ↓
-The AGENT reads BOOTSTRAP.md
+You add API keys, run 'openclaw init'
        ↓
-Agent guides YOU through setup (conversational)
+Start gateway, message your bot
        ↓
-BOOTSTRAP.md gets deleted when complete
+Agent reads BOOTSTRAP.md, walks you through setup
        ↓
-You have a configured, personalized AI agent
+You have a personalized AI agent
 ```
 
-The `BOOTSTRAP.md` file is **instructions for the agent**, not for you. The agent will walk you through everything.
+The `BOOTSTRAP.md` file is **instructions for the agent**, not for you.
 
 ---
 
 ## What's Included
 
 ```
-├── BOOTSTRAP.md              # Setup guide (for the agent to follow)
+├── BOOTSTRAP.md              # Agent setup guide
 ├── config/
-│   └── optimal-defaults.json # Pre-optimized gateway config
+│   └── optimal-defaults.json # Pre-optimized config
 ├── personas/
-│   ├── SOUL-assistant-mode.md    # Reactive assistant template
-│   └── SOUL-cos-mode.md          # Proactive Chief of Staff template
-├── templates/
-│   └── HEARTBEAT-template.md     # Periodic check-in template
+│   ├── SOUL-assistant-mode.md    # Reactive assistant
+│   └── SOUL-cos-mode.md          # Proactive Chief of Staff
 └── tools/
-    ├── code.js               # Routes to cheap models
-    ├── deepseek.js           # Coding workhorse ($0.14/M tokens)
-    ├── gemini.js             # Free summaries & research
-    ├── rag.js                # Brain dump memory
-    ├── rag-docs.js           # Document RAG ingestion
-    └── microsoft-graph-template.js  # MS 365 integration
+    ├── rag.js                # Vector memory (Vectra)
+    ├── gemini.js             # Free AI for grunt work
+    └── deepseek.js           # Cheap coding ($0.14/M tokens)
 ```
-
----
-
-## Bootstrap Phases
-
-| Phase | What | How |
-|-------|------|-----|
-| **0** | Config optimization | Silent — memory search, embeddings, heartbeat |
-| **1** | Install workhorses | Silent — DeepSeek, Gemini, RAG tools |
-| **2** | Getting to know you | Conversational — identity, preferences, operating mode |
-| **3** | Integrations | Guided — email, calendar, task management |
-| **4** | Wrap up | Summarize, first memory entry, set expectations |
 
 ---
 
 ## Operating Modes
 
-During setup, you'll choose between:
+During setup, choose:
 
 ### Assistant Mode
-- Reactive — waits for instructions
+- Reactive — waits for your instructions
 - Helpful and reliable
 - No autonomous actions
 
 ### Chief of Staff Mode
-- Proactive — generates ideas, identifies opportunities
+- Proactive — generates ideas, spots opportunities
 - Works overnight on your backlog
 - Reports what it accomplished
-- Cron jobs for idea generation & night shift work
 
 ---
 
-## API Keys Reference
+## API Keys
 
 | Key | Purpose | Required? | Get it |
 |-----|---------|-----------|--------|
-| **Anthropic** | Claude (the brain) | ✅ Required | [console.anthropic.com](https://console.anthropic.com) |
-| **OpenAI** | Embeddings (memory search) | Recommended | [platform.openai.com](https://platform.openai.com) |
-| Gemini | Free summaries | Optional | [aistudio.google.com](https://aistudio.google.com) |
+| **Anthropic** | Claude (brain) | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
+| **Gemini** | Free embeddings/RAG | Recommended | [aistudio.google.com](https://aistudio.google.com) |
 | DeepSeek | Cheap coding | Optional | [platform.deepseek.com](https://platform.deepseek.com) |
-| Brave Search | Web search | Optional | [brave.com/search/api](https://brave.com/search/api) |
+| Brave | Web search | Optional | [brave.com/search/api](https://brave.com/search/api) |
 
 ---
 
-## Cost Optimization
+## Cost
 
-Built-in model routing keeps costs down:
+| Model | Use | Cost |
+|-------|-----|------|
+| Claude Opus | Brain | ~$15-75/M tokens |
+| DeepSeek | Coding | ~$0.14/M tokens |
+| Gemini | Research | FREE |
 
-| Model | Use for | Cost |
-|-------|---------|------|
-| **Claude Opus** | Brain, conversations, decisions | ~$15-75/M tokens |
-| **Claude Sonnet** | Quick tasks (fallback) | ~$3-15/M tokens |
-| **DeepSeek** | Coding, tool building | ~$0.14/M tokens |
-| **Gemini** | Summaries, research | FREE |
-
-**Typical cost:** $5-15/day for active use.
-
----
-
-## Supported Integrations
-
-- **Microsoft 365**: Outlook, Calendar, To Do, Teams
-- **Google Workspace**: Gmail, Calendar, Drive
-- **Task Management**: Linear, Notion, Todoist
-- **Social**: X/Twitter, LinkedIn
-
----
-
-## Enterprise Deployment
-
-For secure enterprise deployment:
-
-- **AWS Bedrock** — Claude runs in your AWS account, data never leaves
-- **Team isolation** — Separate OpenClaw instances per team
-- **Compliance** — SOC2, HIPAA eligible via Bedrock
-
-See `BOOTSTRAP.md` for architecture guidance.
+**Typical:** $5-15/day active use.
 
 ---
 
@@ -215,20 +147,49 @@ See `BOOTSTRAP.md` for architecture guidance.
 npm install -g openclaw
 ```
 
-**"No API key found"**
-Check `~/.openclaw/secrets/credentials.json` exists and has valid keys.
-
 **Bot not responding**
-1. Check gateway is running: `openclaw gateway status`
+1. Check gateway: `openclaw gateway status`
 2. Check bot token is correct
-3. Check you've messaged the bot first (Telegram requires this)
+3. Make sure you messaged the bot first
+
+**Skip browser install (saves ~400MB)**
+```bash
+SKIP_BROWSER=true curl -fsSL ... | bash
+```
+
+---
+
+## Manual Install (Alternative)
+
+If you prefer not to use the one-liner:
+
+```bash
+# 1. Install Node.js 18+ (https://nodejs.org)
+
+# 2. Clone the repo
+git clone https://github.com/MaximusCarapax/openclaw-starter-kit ~/.openclaw/workspace
+
+# 3. Install OpenClaw
+npm install -g openclaw
+
+# 4. Install dependencies
+cd ~/.openclaw/workspace && npm install
+
+# 5. Copy and edit .env
+cp .env.template .env
+nano .env
+
+# 6. Initialize and start
+openclaw init
+openclaw gateway start
+```
 
 ---
 
 ## License
 
-MIT — Use freely, attribution appreciated.
+MIT — Use freely.
 
 ---
 
-Built with 🦀 by [Maximus Carapax](https://x.com/MaximusCarapax)
+Built with 🦞 by [OpenClaw](https://openclaw.ai)
