@@ -75,6 +75,7 @@ You have a personalized AI agent
 │   ├── google-calendar.js    # Calendar (events, free time)
 │   ├── notion.js             # Notes, databases, tasks
 │   ├── totp.js               # 2FA code generator (no phone needed)
+│   ├── captcha-solver.js     # Bypass CAPTCHAs (2Captcha API)
 │   ├── weather.js            # Weather lookup (free)
 │   ├── web-scraper.js        # Extract content from URLs
 │   └── youtube-transcript.js # Get video transcripts
@@ -139,6 +140,47 @@ alias code='aider --model deepseek/deepseek-chat'
 ```
 
 Aider is git-aware, does multi-file edits, and auto-commits. Much better than raw CLI.
+
+---
+
+## Optional: Agent Independence
+
+Want your agent to handle account signups, verifications, and 2FA without your help? These optional upgrades give your agent true autonomy:
+
+### CAPTCHA Solver (~$3 for 1000 solves)
+
+Let your agent bypass CAPTCHAs during signups and form submissions.
+
+1. Sign up at [2captcha.com](https://2captcha.com) (~$3 minimum deposit)
+2. Copy your API key from the dashboard
+3. Add to `.env`:
+```bash
+TWOCAPTCHA_API_KEY=your_api_key_here
+```
+
+**Usage:**
+```bash
+node tools/captcha-solver.js balance    # Check balance
+node tools/captcha-solver.js test       # Test on demo page
+```
+
+The tool can also be imported in other scripts for automated workflows.
+
+### Phone Number (~$1-2/month)
+
+Give your agent a phone number for SMS verification and 2FA codes.
+
+**Twilio (US numbers):**
+1. Sign up at [twilio.com](https://twilio.com) (free trial includes credit)
+2. Buy a phone number (~$1.15/month)
+3. Add credentials to `.env`:
+```bash
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+```
+
+**Why these matter:** With email + TOTP + CAPTCHA solver + phone number, your agent can sign up for almost any service independently. No more "hey, can you solve this CAPTCHA for me?"
 
 ---
 
