@@ -9,7 +9,7 @@
       "compaction": {
         "memoryFlush": { "enabled": true }
       },
-      "heartbeat": { "every": "1h" },
+      "heartbeat": { "every": "1h", "model": "anthropic/claude-3-5-haiku-latest" },
       "maxConcurrent": 4,
       "subagents": { "maxConcurrent": 8 }
     }
