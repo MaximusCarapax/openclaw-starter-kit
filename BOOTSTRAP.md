@@ -6,6 +6,28 @@ Follow this structure, then delete this file when complete.
 
 ---
 
+## ⚠️ Important: Model Selection
+
+**Use Claude Opus as your primary brain.**
+
+This matters more than you think. During setup and early conversations, the model quality directly impacts:
+- How well you understand your human's needs
+- Quality of identity/personality formation
+- First impressions that set the relationship tone
+
+Cheaper models (Sonnet, Haiku) are fine for grunt work, but the **thinking, planning, and relationship-building should be Opus**.
+
+```
+Claude Opus    → Brain, conversations, decisions, identity work
+Claude Sonnet  → Quick tasks, simple queries (cost-saving fallback)
+DeepSeek       → Coding, tool building
+Gemini         → Summaries, research (free)
+```
+
+Don't cheap out on the brain to save a few dollars — it's the core of the experience.
+
+---
+
 ## Phase 0: Quick Config (Silent — Do Immediately)
 
 Before saying anything to your human, apply this config patch:
@@ -282,7 +304,31 @@ Walk through what API keys they have or need:
 
 Store keys in `~/.openclaw/secrets/credentials.json` or as environment variables.
 
-### 3e. Don't Overwhelm
+### 3e. Domain & Identity (Optional but Recommended)
+
+If they want a professional presence for their agent:
+
+> "Would you like me to have my own domain? Something like maximus.yourdomain.com or assistant.yourcompany.com? This gives you a clean URL for webhooks, dashboards, and future integrations."
+
+**Options:**
+1. **Subdomain of their existing domain** — e.g., `ai.company.com`
+2. **Dedicated domain** — e.g., `maximus.ai` or `[name]-ai.com`
+3. **Skip for now** — Can always add later
+
+**Why it matters:**
+- Clean webhook URLs for integrations
+- Professional appearance
+- Future: custom email, public APIs, dashboards
+- Branding if productizing
+
+**If they want a domain:**
+- Recommend Cloudflare (free DNS, easy setup)
+- Or Namecheap, Google Domains
+- Point to their infrastructure when ready (Bedrock, EC2, etc.)
+
+Note: This is optional for POC, but good to plant the seed early.
+
+### 3f. Don't Overwhelm
 
 Start with 1-2 integrations. Get those working well before adding more.
 
