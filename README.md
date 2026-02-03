@@ -23,6 +23,19 @@ Open Telegram, find your bot, say "hello". 🎉
 
 ## What You Need
 
+### VPS / Server
+
+| Provider | Price | Free Credit | Notes |
+|----------|-------|-------------|-------|
+| **[Zeabur](https://zeabur.com)** | Pay-as-you-go | - | Easiest, auto-deploys from GitHub |
+| **[DigitalOcean](https://digitalocean.com)** | $6/mo | $200 credit | Popular, reliable |
+| **[Vultr](https://vultr.com)** | $5/mo | $100 credit | Global locations |
+| **[Hetzner](https://hetzner.com)** | €4/mo | - | Cheapest, EU-based |
+
+**Minimum specs:** 1 CPU, 1GB RAM, 25GB disk
+
+### API Keys
+
 | Key | Required? | Get it |
 |-----|-----------|--------|
 | **Anthropic** | ✅ Yes | [console.anthropic.com](https://console.anthropic.com) |
@@ -109,6 +122,38 @@ Aider is git-aware, does multi-file edits, and auto-commits. Much better than ra
 
 ---
 
+## Keeping It Running
+
+The setup wizard installs **pm2** to keep your agent running:
+- Survives SSH disconnect
+- Survives server reboot
+- Auto-restarts on crash
+
+```bash
+pm2 status              # Check status
+pm2 logs openclaw       # View logs
+pm2 restart openclaw    # Restart
+pm2 stop openclaw       # Stop
+```
+
+---
+
+## Updating
+
+Pull the latest changes and restart:
+
+```bash
+~/.openclaw/workspace/scripts/update.sh
+```
+
+This will:
+- Pull latest starter kit updates
+- Update dependencies
+- Update OpenClaw CLI
+- Restart the gateway
+
+---
+
 ## Troubleshooting
 
 **"openclaw: command not found"**
@@ -118,9 +163,14 @@ npm install -g openclaw
 
 **Bot not responding**
 ```bash
-openclaw gateway status   # Check if running
-openclaw gateway logs     # View logs
-openclaw gateway restart  # Restart
+pm2 logs openclaw       # Check logs
+pm2 restart openclaw    # Restart
+```
+
+**Gateway not starting**
+```bash
+openclaw gateway status
+openclaw gateway logs
 ```
 
 **Skip browser install (saves ~400MB)**

@@ -221,12 +221,23 @@ if [[ "$INSTALL_AIDER" =~ ^[Yy]$ ]]; then
   
   if command -v aider &> /dev/null; then
     echo -e "${GREEN}[✓]${NC} Aider installed"
-    
-    # Add alias hint
-    echo ""
-    echo -e "${CYAN}Aider tip:${NC} Add this alias to use DeepSeek with Aider:"
-    echo "    alias code='aider --model deepseek/deepseek-chat'"
   fi
+fi
+
+# =============================================================================
+# Install PM2 for process management
+# =============================================================================
+
+echo -e "${BLUE}[openclaw]${NC} Setting up process manager (pm2)..."
+
+if ! command -v pm2 &> /dev/null; then
+  npm install -g pm2 2>/dev/null || sudo npm install -g pm2
+fi
+
+if command -v pm2 &> /dev/null; then
+  echo -e "${GREEN}[✓]${NC} pm2 installed"
+else
+  echo -e "${YELLOW}[!]${NC} pm2 install failed, gateway will run in background"
 fi
 
 # =============================================================================
@@ -237,17 +248,21 @@ echo ""
 echo -e "${BLUE}[openclaw]${NC} Starting gateway..."
 echo ""
 
-# Start in background
-openclaw gateway start &
-GATEWAY_PID=$!
-
-sleep 3
-
-if kill -0 $GATEWAY_PID 2>/dev/null; then
-  echo -e "${GREEN}[✓]${NC} Gateway started"
+if command -v pm2 &> /dev/null; then
+  # Use pm2 for persistence
+  pm2 delete openclaw 2>/dev/null || true
+  pm2 start "openclaw gateway start --foreground" --name openclaw
+  pm2 save 2>/dev/null || true
+  
+  # Setup startup script (survives reboot)
+  pm2 startup 2>/dev/null || true
+  
+  echo -e "${GREEN}[✓]${NC} Gateway started with pm2 (survives SSH disconnect & reboot)"
 else
-  echo -e "${YELLOW}[!]${NC} Gateway may have failed to start"
-  echo "    Check with: openclaw gateway status"
+  # Fallback to background process
+  openclaw gateway start &
+  sleep 3
+  echo -e "${GREEN}[✓]${NC} Gateway started"
 fi
 
 # =============================================================================
