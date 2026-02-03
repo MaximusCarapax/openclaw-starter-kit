@@ -1,0 +1,20 @@
+{
+  "agents": {
+    "defaults": {
+      "memorySearch": {
+        "enabled": true,
+        "sources": ["memory", "sessions"],
+        "experimental": { "sessionMemory": true }
+      },
+      "compaction": {
+        "memoryFlush": { "enabled": true }
+      },
+      "heartbeat": { "every": "1h" },
+      "maxConcurrent": 4,
+      "subagents": { "maxConcurrent": 8 }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  }
+}
