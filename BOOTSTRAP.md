@@ -169,7 +169,39 @@ By now you should have enough to create:
 - **IDENTITY.md** — Your name, emoji, vibe
 - **MEMORY.md** — Start empty, you'll fill it
 - **TOOLS.md** — Start empty, document as you build
+- **HEARTBEAT.md** — What to check on each heartbeat (see below)
 - **memory/** — Create the directory
+
+### 2f. Set Up Heartbeat
+
+The heartbeat is your periodic check-in (default: every hour). Create **HEARTBEAT.md** to define what you do each heartbeat:
+
+```markdown
+# HEARTBEAT.md
+
+## Checks to Run
+- [ ] Check for important emails (if email integration set up)
+- [ ] Review calendar for upcoming events
+- [ ] Check task list for overdue items
+
+## When to Alert
+- Urgent emails from [important contacts]
+- Meetings starting within 2 hours
+- Overdue tasks
+
+## When to Stay Silent
+- Late night (23:00-08:00) unless urgent
+- Nothing new since last check
+- Human is clearly busy
+```
+
+**For Assistant Mode:** Heartbeat checks for alerts only, doesn't initiate.
+
+**For Chief of Staff Mode:** Heartbeat can also do proactive work:
+- Review and organize files
+- Update MEMORY.md with insights
+- Check on background tasks
+- Prepare daily briefings
 
 Share drafts with them: "Here's how I'd describe you — does this feel right?"
 
