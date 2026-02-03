@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # OpenClaw Starter Kit - Silent Install
-# Zero to AI agent with browser automation & RAG
+# Zero to AI agent in under a minute
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/MaximusCarapax/openclaw-starter-kit/main/scripts/silent-install.sh | bash
@@ -26,8 +26,8 @@ error() { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 echo ""
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║${NC}           🦞 OpenClaw Starter Kit Install                  ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}         Browser Automation • RAG • AI Agent               ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}              🦞 OpenClaw Starter Kit                       ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}            Your AI Agent in Under a Minute                 ${BLUE}║${NC}"
 echo -e "${BLUE}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -40,65 +40,52 @@ NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
 [ "$NODE_VERSION" -lt 18 ] && error "Node.js 18+ required (found: $(node -v))"
 success "Node.js $(node -v)"
 
-# Check Docker
-DOCKER_AVAILABLE=false
-if command -v docker &> /dev/null && docker info &> /dev/null; then
-  DOCKER_AVAILABLE=true
-  success "Docker available"
-else
-  warn "Docker not available (ChromaDB will need manual setup)"
+if ! command -v npm &> /dev/null; then
+  error "npm not found"
 fi
+success "npm $(npm -v)"
 
 # Create directories
-log "Creating directories..."
+log "Setting up directories..."
 mkdir -p "$SECRETS_DIR"
 chmod 700 "$SECRETS_DIR"
 
-# Clone starter kit
-log "Cloning starter kit..."
+# Clone or update starter kit
+log "Getting starter kit..."
 if [ -d "$WORKSPACE/.git" ]; then
-  warn "Workspace exists, pulling latest..."
-  cd "$WORKSPACE" && git pull
+  cd "$WORKSPACE" && git pull --quiet
+  success "Updated existing workspace"
 else
-  rm -rf "$WORKSPACE"
-  git clone https://github.com/MaximusCarapax/openclaw-starter-kit.git "$WORKSPACE"
+  rm -rf "$WORKSPACE" 2>/dev/null || true
+  git clone --quiet https://github.com/MaximusCarapax/openclaw-starter-kit.git "$WORKSPACE"
+  success "Cloned starter kit"
 fi
 cd "$WORKSPACE"
-success "Workspace: $WORKSPACE"
 
-# Install OpenClaw
+# Install OpenClaw CLI
 log "Installing OpenClaw..."
-npm install -g openclaw@latest 2>/dev/null || sudo npm install -g openclaw@latest
-success "OpenClaw installed"
+npm install -g openclaw@latest 2>/dev/null || {
+  warn "Global install failed, trying with sudo..."
+  sudo npm install -g openclaw@latest
+}
+success "OpenClaw CLI installed"
 
 # Install workspace dependencies
 log "Installing dependencies..."
-npm install
-success "Dependencies installed"
+npm install --quiet
+success "Dependencies ready"
 
-# Install Playwright + Chromium
-log "Installing browser (this may take a minute)..."
-npm install playwright playwright-extra puppeteer-extra-plugin-stealth 2>/dev/null || true
-npx playwright install chromium 2>/dev/null || {
-  warn "Chromium install needs deps, trying with sudo..."
-  npx playwright install chromium --with-deps 2>/dev/null || warn "Chromium install failed - run manually"
-}
-success "Browser installed"
-
-# Start ChromaDB
-if [ "$DOCKER_AVAILABLE" = true ]; then
-  log "Starting ChromaDB..."
-  if docker ps -a --format '{{.Names}}' | grep -q "^openclaw-chroma$"; then
-    docker start openclaw-chroma 2>/dev/null || true
-  else
-    docker run -d --name openclaw-chroma -p 8000:8000 chromadb/chroma 2>/dev/null || true
-  fi
-  success "ChromaDB running on port 8000"
+# Optional: Install browser
+if [ "${INSTALL_BROWSER:-true}" = "true" ]; then
+  log "Installing browser (optional, ~400MB)..."
+  npx playwright install chromium 2>/dev/null && success "Chromium installed" || {
+    warn "Browser install skipped (run 'npm run install:browser' later)"
+  }
 fi
 
 # Create .env if missing
 if [ ! -f .env ]; then
-  cat > .env << 'EOF'
+  cp .env.template .env 2>/dev/null || cat > .env << 'EOF'
 # Required
 ANTHROPIC_API_KEY=
 
@@ -106,20 +93,17 @@ ANTHROPIC_API_KEY=
 TELEGRAM_BOT_TOKEN=
 DISCORD_BOT_TOKEN=
 
-# RAG (free)
+# RAG embeddings (free!)
 GEMINI_API_KEY=
-CHROMA_URL=http://localhost:8000
-
-# Optional
-BRAVE_API_KEY=
-DEEPSEEK_API_KEY=
 EOF
-  success "Created .env template"
+  success "Created .env (add your API keys)"
+else
+  success ".env exists"
 fi
 
-# Create credentials template
+# Create secrets template
 if [ ! -f "$SECRETS_DIR/credentials.json" ]; then
-  echo '{"_comment": "Store credentials here"}' > "$SECRETS_DIR/credentials.json"
+  echo '{}' > "$SECRETS_DIR/credentials.json"
   chmod 600 "$SECRETS_DIR/credentials.json"
 fi
 
@@ -128,20 +112,25 @@ echo -e "${GREEN}╔════════════════════
 echo -e "${GREEN}║${NC}                  ✓ Installation Complete!                  ${GREEN}║${NC}"
 echo -e "${GREEN}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
+echo -e "  ${BLUE}Workspace:${NC} $WORKSPACE"
+echo ""
 echo -e "  ${YELLOW}Next steps:${NC}"
 echo ""
-echo "  1. Add API keys to $WORKSPACE/.env"
-echo "     - ANTHROPIC_API_KEY (required)"
-echo "     - TELEGRAM_BOT_TOKEN or DISCORD_BOT_TOKEN"
-echo "     - GEMINI_API_KEY (free: https://aistudio.google.com/apikey)"
+echo "  1. Add your API keys:"
+echo "     nano $WORKSPACE/.env"
 echo ""
-echo "  2. Configure OpenClaw:"
+echo "     Required:"
+echo "     - ANTHROPIC_API_KEY (https://console.anthropic.com)"
+echo "     - TELEGRAM_BOT_TOKEN or DISCORD_BOT_TOKEN"
+echo ""
+echo "     Optional (free, for RAG):"
+echo "     - GEMINI_API_KEY (https://aistudio.google.com/apikey)"
+echo ""
+echo "  2. Configure your agent:"
 echo "     openclaw init"
 echo ""
-echo "  3. Start the agent:"
+echo "  3. Start:"
 echo "     openclaw gateway start"
 echo ""
-echo -e "  ${BLUE}Test RAG:${NC}"
-echo "     node tools/rag.js add \"Remember this\""
-echo "     node tools/rag.js search \"what to remember\""
+echo -e "  ${BLUE}Docs:${NC} https://docs.openclaw.ai"
 echo ""

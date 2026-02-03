@@ -2,17 +2,16 @@
   "name": "openclaw-starter-kit",
   "version": "1.0.0",
   "private": true,
-  "description": "OpenClaw AI Agent Starter Kit with browser automation and RAG",
+  "description": "OpenClaw AI Agent Starter Kit",
   "scripts": {
     "rag": "node tools/rag.js",
-    "chroma:start": "docker start openclaw-chroma 2>/dev/null || docker run -d --name openclaw-chroma -p 8000:8000 chromadb/chroma",
-    "chroma:stop": "docker stop openclaw-chroma",
     "install:browser": "npx playwright install chromium"
   },
   "dependencies": {
-    "chromadb": "^1.7.0",
-    "dotenv": "^16.3.1",
-    "node-fetch": "^2.7.0",
+    "vectra": "^0.5.0",
+    "dotenv": "^16.3.1"
+  },
+  "optionalDependencies": {
     "playwright": "^1.40.0",
     "playwright-extra": "^4.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2"

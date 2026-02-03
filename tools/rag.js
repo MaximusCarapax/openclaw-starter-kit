@@ -1,40 +1,41 @@
 #!/usr/bin/env node
 /**
- * RAG Tool - Vector memory using ChromaDB + Gemini embeddings (free!)
+ * RAG Tool - Vector memory using Vectra + Gemini embeddings (free!)
  * 
  * Usage:
- *   node rag.js add "text to remember" [--collection name]
- *   node rag.js search "query" [--collection name] [--top 5]
- *   node rag.js ingest <file> [--collection name]
- *   node rag.js list [--collection name]
- *   node rag.js collections
- *   node rag.js delete <id> [--collection name]
+ *   node rag.js add "text to remember" [--source "note"]
+ *   node rag.js search "query" [--top 5]
+ *   node rag.js list
+ *   node rag.js stats
  */
 
-const { ChromaClient } = require('chromadb');
+const { LocalIndex } = require('vectra');
 const fs = require('fs');
 const path = require('path');
 
 // Config
-const CHROMA_URL = process.env.CHROMA_URL || 'http://localhost:8000';
-const DEFAULT_COLLECTION = 'memories';
+const INDEX_PATH = path.join(__dirname, '..', 'data', 'vectors');
 
-// Load API key for embeddings
+// Load API key
 function loadKey(keyName) {
+  // Try .env file
   const envPath = path.join(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     const env = fs.readFileSync(envPath, 'utf8');
     const match = env.match(new RegExp(`${keyName}=(.+)`));
     if (match) return match[1].trim();
   }
+  // Fall back to environment
   return process.env[keyName] || null;
 }
 
 const GEMINI_API_KEY = loadKey('GEMINI_API_KEY');
 
-// Get embedding using Gemini (free)
+// Get embedding using Gemini (free!)
 async function getEmbedding(text) {
-  if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY required - add to .env file');
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY required - add to .env file (free: https://aistudio.google.com/apikey)');
+  }
   
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`,
@@ -50,24 +51,6 @@ async function getEmbedding(text) {
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.embedding.values;
-}
-
-// Get embeddings for multiple texts
-async function getEmbeddings(texts) {
-  return Promise.all(texts.map(t => getEmbedding(t)));
-}
-
-// Chunk text for documents
-function chunkText(text, chunkSize = 1000, overlap = 200) {
-  const chunks = [];
-  let start = 0;
-  while (start < text.length) {
-    const end = Math.min(start + chunkSize, text.length);
-    chunks.push(text.slice(start, end));
-    start = end - overlap;
-    if (start + overlap >= text.length) break;
-  }
-  return chunks;
 }
 
 // Parse CLI args
@@ -93,40 +76,35 @@ function parseArgs(args) {
 async function main() {
   const [,, cmd, ...rawArgs] = process.argv;
   const args = parseArgs(rawArgs);
-  const collectionName = args.collection || DEFAULT_COLLECTION;
   
-  // Connect to Chroma
-  const client = new ChromaClient({ path: CHROMA_URL });
+  // Ensure index directory exists
+  if (!fs.existsSync(INDEX_PATH)) {
+    fs.mkdirSync(INDEX_PATH, { recursive: true });
+  }
   
-  try {
-    await client.heartbeat();
-  } catch (e) {
-    console.error('❌ Cannot connect to ChromaDB at', CHROMA_URL);
-    console.error('   Start it with: npm run chroma:start');
-    console.error('   Or: docker run -d --name openclaw-chroma -p 8000:8000 chromadb/chroma');
-    process.exit(1);
+  const index = new LocalIndex(INDEX_PATH);
+  if (!await index.isIndexCreated()) {
+    await index.createIndex();
   }
 
   switch (cmd) {
     case 'add': {
       const text = args._.join(' ');
-      if (!text) { 
-        console.log('Usage: node rag.js add "text to remember" [--collection name]'); 
-        return; 
+      if (!text) {
+        console.log('Usage: node rag.js add "text to remember" [--source "note"]');
+        return;
       }
       
-      const collection = await client.getOrCreateCollection({ name: collectionName });
-      const embedding = await getEmbedding(text);
-      const id = `mem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      
-      await collection.add({
-        ids: [id],
-        embeddings: [embedding],
-        documents: [text],
-        metadatas: [{ timestamp: Date.now(), type: 'memory' }]
+      const vector = await getEmbedding(text);
+      await index.insertItem({
+        vector,
+        metadata: {
+          text,
+          source: args.source || 'manual',
+          timestamp: Date.now()
+        }
       });
-      
-      console.log(`✓ Added to "${collectionName}" collection`);
+      console.log('✓ Added to memory');
       break;
     }
 
@@ -134,140 +112,95 @@ async function main() {
       const query = args._.join(' ');
       const topK = parseInt(args.top) || 5;
       
-      if (!query) { 
-        console.log('Usage: node rag.js search "query" [--collection name] [--top 5]'); 
-        return; 
+      if (!query) {
+        console.log('Usage: node rag.js search "query" [--top 5]');
+        return;
       }
       
-      const collection = await client.getOrCreateCollection({ name: collectionName });
-      const queryEmbedding = await getEmbedding(query);
+      const vector = await getEmbedding(query);
+      const results = await index.queryItems(vector, topK);
       
-      const results = await collection.query({
-        queryEmbeddings: [queryEmbedding],
-        nResults: topK
-      });
-      
-      if (!results.documents[0]?.length) {
+      if (results.length === 0) {
         console.log('No results found');
         return;
       }
       
-      console.log(`\nResults from "${collectionName}":\n`);
-      results.documents[0].forEach((doc, i) => {
-        const distance = results.distances?.[0]?.[i]?.toFixed(3) || '?';
-        const meta = results.metadatas?.[0]?.[i] || {};
-        console.log(`[${i + 1}] (distance: ${distance})`);
+      console.log(`\nTop ${results.length} results:\n`);
+      results.forEach((r, i) => {
+        const meta = r.item.metadata;
+        console.log(`[${i + 1}] (score: ${r.score.toFixed(3)})`);
         if (meta.source) console.log(`    Source: ${meta.source}`);
-        console.log(`    ${doc.substring(0, 200)}${doc.length > 200 ? '...' : ''}`);
+        console.log(`    ${meta.text}`);
         console.log('');
       });
       break;
     }
 
-    case 'ingest': {
-      const filePath = args._[0];
-      if (!filePath) {
-        console.log('Usage: node rag.js ingest <file> [--collection name]');
-        return;
-      }
+    case 'list': {
+      const items = await index.listItems();
+      console.log(`\nTotal items: ${items.length}\n`);
       
-      if (!fs.existsSync(filePath)) {
-        console.error(`File not found: ${filePath}`);
-        return;
-      }
-      
-      const content = fs.readFileSync(filePath, 'utf8');
-      const chunks = chunkText(content);
-      const fileName = path.basename(filePath);
-      
-      console.log(`Ingesting ${fileName} (${chunks.length} chunks)...`);
-      
-      const collection = await client.getOrCreateCollection({ name: collectionName });
-      const embeddings = await getEmbeddings(chunks);
-      
-      const ids = chunks.map((_, i) => `${fileName}_chunk_${i}_${Date.now()}`);
-      const metadatas = chunks.map((_, i) => ({
-        source: fileName,
-        chunk: i,
-        totalChunks: chunks.length,
-        timestamp: Date.now(),
-        type: 'document'
-      }));
-      
-      await collection.add({
-        ids,
-        embeddings,
-        documents: chunks,
-        metadatas
+      items.slice(0, 10).forEach((item, i) => {
+        const meta = item.metadata;
+        const preview = meta.text?.substring(0, 60).replace(/\n/g, ' ') || '?';
+        console.log(`  ${i + 1}. ${preview}...`);
+        if (meta.source) console.log(`     (source: ${meta.source})`);
       });
       
-      console.log(`✓ Ingested ${chunks.length} chunks from ${fileName} into "${collectionName}"`);
-      break;
-    }
-
-    case 'list': {
-      const collection = await client.getOrCreateCollection({ name: collectionName });
-      const count = await collection.count();
-      const peek = await collection.peek({ limit: 10 });
-      
-      console.log(`\nCollection: ${collectionName}`);
-      console.log(`Total items: ${count}\n`);
-      
-      if (peek.documents.length > 0) {
-        console.log('Recent items:');
-        peek.documents.forEach((doc, i) => {
-          const meta = peek.metadatas?.[i] || {};
-          const preview = doc.substring(0, 60).replace(/\n/g, ' ');
-          console.log(`  ${i + 1}. ${preview}...`);
-          if (meta.source) console.log(`     (source: ${meta.source})`);
-        });
+      if (items.length > 10) {
+        console.log(`\n  ... and ${items.length - 10} more`);
       }
       break;
     }
 
-    case 'collections': {
-      const collections = await client.listCollections();
-      console.log('\nCollections:');
-      for (const col of collections) {
-        const c = await client.getCollection({ name: col.name });
-        const count = await c.count();
-        console.log(`  - ${col.name} (${count} items)`);
-      }
+    case 'stats': {
+      const items = await index.listItems();
+      const sources = {};
+      items.forEach(item => {
+        const src = item.metadata.source || 'unknown';
+        sources[src] = (sources[src] || 0) + 1;
+      });
+      
+      console.log(`\nRAG Statistics:`);
+      console.log(`  Total items: ${items.length}`);
+      console.log(`  Index path: ${INDEX_PATH}`);
+      console.log(`\n  By source:`);
+      Object.entries(sources).forEach(([src, count]) => {
+        console.log(`    ${src}: ${count}`);
+      });
       break;
     }
 
     case 'delete': {
-      const collection = await client.getOrCreateCollection({ name: collectionName });
       const id = args._[0];
+      if (!id) {
+        console.log('Usage: node rag.js delete <id>');
+        console.log('       node rag.js delete --all');
+        return;
+      }
       
       if (args.all) {
-        await client.deleteCollection({ name: collectionName });
-        console.log(`✓ Deleted collection "${collectionName}"`);
-      } else if (id) {
-        await collection.delete({ ids: [id] });
-        console.log(`✓ Deleted item ${id}`);
+        fs.rmSync(INDEX_PATH, { recursive: true, force: true });
+        console.log('✓ Cleared all memories');
       } else {
-        console.log('Usage: node rag.js delete <id> [--collection name]');
-        console.log('       node rag.js delete --all --collection name');
+        // Vectra doesn't have direct delete by ID, would need to rebuild index
+        console.log('Note: Vectra requires index rebuild for deletion. Use --all to clear everything.');
       }
       break;
     }
 
     default:
       console.log(`
-OpenClaw RAG Tool (ChromaDB)
+OpenClaw RAG Tool (Vectra)
 
 Usage:
-  node rag.js add "text to remember" [--collection name]
-  node rag.js search "query" [--collection name] [--top 5]
-  node rag.js ingest <file> [--collection name]
-  node rag.js list [--collection name]
-  node rag.js collections
-  node rag.js delete <id> [--collection name]
-  node rag.js delete --all --collection name
+  node rag.js add "text to remember" [--source "note"]
+  node rag.js search "query" [--top 5]
+  node rag.js list
+  node rag.js stats
+  node rag.js delete --all
 
-Default collection: ${DEFAULT_COLLECTION}
-ChromaDB URL: ${CHROMA_URL}
+Index path: ${INDEX_PATH}
       `);
   }
 }
