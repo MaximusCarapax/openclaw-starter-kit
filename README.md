@@ -306,11 +306,39 @@ openclaw gateway start                   # Start
 
 ## Documentation
 
+### Setup & Configuration
 | Doc | Description |
 |-----|-------------|
 | [CONFIGURATION.md](CONFIGURATION.md) | API keys, cost optimization, heartbeat setup |
 | [docs/DELEGATION.md](docs/DELEGATION.md) | Orchestrator patterns — delegate grunt work to cheap models |
-| [docs/DATABASE.md](docs/DATABASE.md) | Self-hosted database options (SQLite, PocketBase) |
+
+### Architecture (v2 Roadmap)
+| Doc | Description |
+|-----|-------------|
+| [docs/DATABASE.md](docs/DATABASE.md) | SQLite schema for tasks, contacts, costs, logs |
+| [docs/MODEL-ROUTER.md](docs/MODEL-ROUTER.md) | Automatic routing to cheapest capable model |
+| [docs/DASHBOARD-SPEC.md](docs/DASHBOARD-SPEC.md) | Next.js dashboard for monitoring & management |
+| [docs/EVALUATION.md](docs/EVALUATION.md) | Lessons learned & improvement roadmap |
+| [docs/VISION-V2.md](docs/VISION-V2.md) | Long-term vision: Agent Operating System |
+
+---
+
+## Roadmap
+
+### Now
+- ✅ Quick start (2 commands to running agent)
+- ✅ Tool delegation (Gemini/DeepSeek for grunt work)
+- ✅ Persona templates (Assistant vs Chief of Staff)
+
+### Next
+- 🔲 SQLite database (tasks, contacts, costs, logs)
+- 🔲 Model router (automatic cost optimization)
+- 🔲 Dashboard (health, costs, tasks in one view)
+
+### Future
+- 🔲 Webhook server (receive SMS, Stripe events, etc.)
+- 🔲 Browser session manager (persistent auth)
+- 🔲 Plugin marketplace (share tools/integrations)
 
 ---
 
