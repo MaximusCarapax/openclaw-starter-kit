@@ -304,6 +304,16 @@ openclaw gateway start                   # Start
 
 ---
 
+## Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [CONFIGURATION.md](CONFIGURATION.md) | API keys, cost optimization, heartbeat setup |
+| [docs/DELEGATION.md](docs/DELEGATION.md) | Orchestrator patterns — delegate grunt work to cheap models |
+| [docs/DATABASE.md](docs/DATABASE.md) | Self-hosted database options (SQLite, PocketBase) |
+
+---
+
 ## License
 
 MIT — Use freely.
